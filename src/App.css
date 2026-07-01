@@ -811,6 +811,14 @@
   color: #b04a4a;
 }
 
+.flavors__hint {
+  margin: 0;
+  text-align: center;
+  font-family: 'Oswald', sans-serif;
+  font-size: 0.8rem;
+  color: #5a6a8a;
+}
+
 /* ----------------------------------------------------------------
    CHOOSING THE FLAVORS — tam sayfa
    ---------------------------------------------------------------- */

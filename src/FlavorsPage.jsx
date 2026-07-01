@@ -6,27 +6,39 @@ import { assetUrl } from './assetUrl'
 export default function FlavorsPage({ onBack }) {
   const [fanName, setFanName] = useState('')
   const [photoReady, setPhotoReady] = useState(false)
+  const [frameReady, setFrameReady] = useState(false)
+  const [pendingPhoto, setPendingPhoto] = useState(null)
   const [submitState, setSubmitState] = useState('idle')
   const canvasRef = useRef(null)
   const frameRef = useRef(null)
   const fileInputRef = useRef(null)
+
+  const drawComposite = (photoImg) => {
+    const frame = frameRef.current
+    const canvas = canvasRef.current
+    if (!frame || !canvas || !photoImg) return false
+    canvas.width = frame.naturalWidth
+    canvas.height = frame.naturalHeight
+    drawFrameComposite(canvas.getContext('2d'), photoImg, frame)
+    return true
+  }
 
   useEffect(() => {
     const img = new Image()
     img.src = assetUrl('frame.png')
     img.onload = () => {
       frameRef.current = img
+      setFrameReady(true)
     }
   }, [])
 
-  const drawComposite = (photoImg) => {
-    const frame = frameRef.current
-    const canvas = canvasRef.current
-    if (!frame || !canvas) return
-    canvas.width = frame.naturalWidth
-    canvas.height = frame.naturalHeight
-    drawFrameComposite(canvas.getContext('2d'), photoImg, frame)
-  }
+  useEffect(() => {
+    if (!frameReady || !pendingPhoto) return
+    if (drawComposite(pendingPhoto)) {
+      setPhotoReady(true)
+      setPendingPhoto(null)
+    }
+  }, [frameReady, pendingPhoto])
 
   const handlePhoto = (e) => {
     const file = e.target.files && e.target.files[0]
@@ -34,13 +46,21 @@ export default function FlavorsPage({ onBack }) {
     const url = URL.createObjectURL(file)
     const img = new Image()
     img.onload = () => {
-      drawComposite(img)
-      setPhotoReady(true)
+      if (drawComposite(img)) {
+        setPhotoReady(true)
+        setPendingPhoto(null)
+      } else {
+        setPhotoReady(false)
+        setPendingPhoto(img)
+      }
       setSubmitState('idle')
       URL.revokeObjectURL(url)
     }
     img.src = url
   }
+
+  const canSubmit =
+    photoReady && fanName.trim().length > 0 && submitState !== 'sending'
 
   const downloadComposite = () => {
     const canvas = canvasRef.current
@@ -133,7 +153,7 @@ export default function FlavorsPage({ onBack }) {
               type="button"
               className="flavors__btn flavors__btn--send"
               onClick={handleSubmit}
-              disabled={!photoReady || !fanName.trim() || submitState === 'sending'}
+              disabled={!canSubmit}
             >
               {submitState === 'sending'
                 ? 'Gönderiliyor…'
@@ -142,6 +162,14 @@ export default function FlavorsPage({ onBack }) {
                   : 'Gönder'}
             </button>
           </div>
+
+          {!canSubmit && submitState !== 'done' && (
+            <p className="flavors__hint">
+              {!photoReady
+                ? 'Önce galeriden bir fotoğraf seç.'
+                : 'Göndermek için yukarıya adını yaz.'}
+            </p>
+          )}
 
           {submitState === 'done' && (
             <p className="flavors__note">
