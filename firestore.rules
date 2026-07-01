@@ -2,14 +2,10 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     match /flavors_entries/{entryId} {
-      // Fotoğraf gönderme — giriş gerekmez
-      allow create: if request.resource.data.name is string
-        && request.resource.data.name.size() > 0
-        && request.resource.data.name.size() <= 40
-        && request.resource.data.image is string
-        && request.resource.data.image.size() < 900000;
+      // Herkes gönderebilir — görsel boyutu/formatı sınırlanmaz
+      allow create: if true;
 
-      // Admin paneli — giriş şart
+      // Sadece admin okur / siler
       allow read, delete: if request.auth != null;
       allow update: if false;
     }
