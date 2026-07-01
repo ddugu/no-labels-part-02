@@ -7,7 +7,7 @@ import {
   query,
   orderBy,
   limit,
-} from 'firebase/firestore'
+} from 'firebase/firestore/lite'
 import {
   signInWithEmailAndPassword,
   signOut,
@@ -67,16 +67,16 @@ function withTimeout(promise, ms, message) {
 }
 
 const TIMEOUT_MSG =
-  'Firestore\'a bağlanılamıyor. Rules → Publish yaptın mı? Reklam engelleyici/VPN kapat, sayfayı yenile.'
+  'Bağlantı zaman aşımı. Sayfayı yenile; hâlâ olmazsa farklı tarayıcı veya mobil veri dene.'
 
 export async function checkFirestoreConnection() {
   if (!firebaseEnabled || !db) {
-    return { ok: false, reason: 'Firebase .env ayarları eksik' }
+    return { ok: false, reason: 'Canlı sitede Firebase ayarları eksik — GitHub Variables + Deploy gerekli.' }
   }
   try {
     await withTimeout(
       getDocs(query(collection(db, COL), limit(1))),
-      12_000,
+      8_000,
       TIMEOUT_MSG,
     )
     return { ok: true }

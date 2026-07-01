@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { addFlavorEntry, checkFirestoreConnection } from './submissions'
+import { addFlavorEntry } from './submissions'
 import { drawFrameComposite } from './frameUtils'
 import { assetUrl } from './assetUrl'
 
@@ -10,16 +10,9 @@ export default function FlavorsPage({ onBack }) {
   const [pendingPhoto, setPendingPhoto] = useState(null)
   const [submitState, setSubmitState] = useState('idle')
   const [submitError, setSubmitError] = useState('')
-  const [connWarning, setConnWarning] = useState('')
   const canvasRef = useRef(null)
   const frameRef = useRef(null)
   const fileInputRef = useRef(null)
-
-  useEffect(() => {
-    checkFirestoreConnection().then((r) => {
-      if (!r.ok) setConnWarning(r.reason)
-    })
-  }, [])
 
   const drawComposite = (photoImg) => {
     const frame = frameRef.current
@@ -110,12 +103,6 @@ export default function FlavorsPage({ onBack }) {
         Temaya uygun bir fotoğraf seç; “NO LABELS PART 02” çerçevesi otomatik olarak
         fotoğrafının üstüne yerleşsin. Sonra indir ve paylaş!
       </p>
-
-      {connWarning && (
-        <p className="flavors__note flavors__note--err flavors-page__conn-warn">
-          {connWarning}
-        </p>
-      )}
 
       <div className="flavors-page__layout">
         <div className="flavors-page__preview">

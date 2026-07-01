@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app'
-import { initializeFirestore } from 'firebase/firestore'
+import { getFirestore } from 'firebase/firestore/lite'
 import { getAuth } from 'firebase/auth'
 
 const cfg = {
@@ -18,10 +18,8 @@ let auth = null
 
 if (firebaseEnabled) {
   const app = initializeApp(cfg)
-  // Bazı ağlarda WebChannel takılır; long polling bağlantıyı düzeltir
-  db = initializeFirestore(app, {
-    experimentalForceLongPolling: true,
-  })
+  // Lite SDK = fetch tabanlı; GitHub Pages’te WebChannel takılmasını önler
+  db = getFirestore(app)
   auth = getAuth(app)
 }
 
