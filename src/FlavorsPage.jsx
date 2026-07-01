@@ -150,7 +150,7 @@ export default function FlavorsPage({ onBack }) {
           )}
           {submitState === 'error' && (
             <p className="flavors__note flavors__note--err">
-              Gönderilemedi, lütfen tekrar dene.
+              Gönderilemedi. Sunucu kapalı olabilir — biraz bekleyip tekrar dene.
             </p>
           )}
         </aside>

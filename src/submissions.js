@@ -55,7 +55,8 @@ export async function addFlavorEntry(name, canvas) {
     return
   }
 
-  // API kapalıysa yerel yedek (geliştirme)
+  // Canlı sitede API şart; yerelde API kapalıysa localStorage yedek
+  if (import.meta.env.PROD) throw new Error('API kapalı')
   const dataUrl = canvas.toDataURL('image/jpeg', 0.85)
   const list = JSON.parse(localStorage.getItem(LS_KEY) || '[]')
   list.push({ name, event: EVENT, image: dataUrl, ts: Date.now() })
