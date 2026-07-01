@@ -188,6 +188,11 @@ export default function FlavorsPage({ onBack }) {
           )}
         </aside>
       </div>
+      {import.meta.env.VITE_BUILD_SHA && (
+        <p className="flavors-build-id" aria-hidden="true">
+          build {String(import.meta.env.VITE_BUILD_SHA).slice(0, 7)}
+        </p>
+      )}
     </main>
   )
 }

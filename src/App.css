@@ -897,6 +897,15 @@
   text-align: left;
 }
 
+.flavors-build-id {
+  margin: 1.5rem 0 0;
+  text-align: center;
+  font-family: 'Oswald', sans-serif;
+  font-size: 0.65rem;
+  letter-spacing: 0.06em;
+  color: rgba(26, 47, 75, 0.35);
+}
+
 .flavors-page__layout {
   display: grid;
   grid-template-columns: 1fr min(320px, 100%);
