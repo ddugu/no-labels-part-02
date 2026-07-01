@@ -22,6 +22,40 @@ const EVENT = 'CHOOSING THE FLAVORS'
 const localAdminPassword = () =>
   (import.meta.env.VITE_ADMIN_PASSWORD || 'nolabels-admin').trim()
 
+function canvasToUploadDataUrl(canvas) {
+  const maxLen = 850_000
+  let quality = 0.78
+  let dataUrl = canvas.toDataURL('image/jpeg', quality)
+
+  while (dataUrl.length > maxLen && quality > 0.45) {
+    quality -= 0.07
+    dataUrl = canvas.toDataURL('image/jpeg', quality)
+  }
+
+  if (dataUrl.length <= maxLen) return dataUrl
+
+  const scale = 0.72
+  const tmp = document.createElement('canvas')
+  tmp.width = Math.round(canvas.width * scale)
+  tmp.height = Math.round(canvas.height * scale)
+  tmp.getContext('2d').drawImage(canvas, 0, 0, tmp.width, tmp.height)
+  return tmp.toDataURL('image/jpeg', 0.65)
+}
+
+function firebaseErrorMessage(err) {
+  const code = err?.code || ''
+  if (code === 'permission-denied') {
+    return 'Firestore izni yok. Firebase Console → Firestore → Rules kısmını kontrol et.'
+  }
+  if (code === 'unavailable' || code === 'not-found') {
+    return 'Firestore bulunamadı. Firebase Console’da veritabanını oluştur.'
+  }
+  if (code === 'invalid-argument' || code === 'resource-exhausted') {
+    return 'Görsel çok büyük. Daha küçük bir fotoğrafla tekrar dene.'
+  }
+  return err?.message || 'Firebase hatası'
+}
+
 export function watchAdminAuth(callback) {
   if (firebaseEnabled && auth) {
     return onAuthStateChanged(auth, (user) => callback(Boolean(user)))
@@ -56,12 +90,16 @@ export async function adminLogout() {
 }
 
 export async function addFlavorEntry(name, canvas) {
-  const image = canvas.toDataURL('image/jpeg', 0.85)
+  const image = canvasToUploadDataUrl(canvas)
   const entry = { name, event: EVENT, image, ts: Date.now() }
 
   if (firebaseEnabled && db) {
-    await addDoc(collection(db, COL), entry)
-    return
+    try {
+      await addDoc(collection(db, COL), entry)
+      return
+    } catch (err) {
+      throw new Error(firebaseErrorMessage(err))
+    }
   }
 
   if (import.meta.env.PROD) throw new Error('Firebase yapılandırılmamış')

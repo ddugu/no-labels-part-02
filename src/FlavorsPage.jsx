@@ -9,6 +9,7 @@ export default function FlavorsPage({ onBack }) {
   const [frameReady, setFrameReady] = useState(false)
   const [pendingPhoto, setPendingPhoto] = useState(null)
   const [submitState, setSubmitState] = useState('idle')
+  const [submitError, setSubmitError] = useState('')
   const canvasRef = useRef(null)
   const frameRef = useRef(null)
   const fileInputRef = useRef(null)
@@ -75,11 +76,13 @@ export default function FlavorsPage({ onBack }) {
     const canvas = canvasRef.current
     if (!canvas || !photoReady || !fanName.trim()) return
     setSubmitState('sending')
+    setSubmitError('')
     try {
       await addFlavorEntry(fanName.trim(), canvas)
       setSubmitState('done')
     } catch (err) {
       console.error(err)
+      setSubmitError(err.message || 'Gönderilemedi.')
       setSubmitState('error')
     }
   }
@@ -178,7 +181,7 @@ export default function FlavorsPage({ onBack }) {
           )}
           {submitState === 'error' && (
             <p className="flavors__note flavors__note--err">
-              Gönderilemedi. Firebase bağlantısını kontrol et ve tekrar dene.
+              {submitError || 'Gönderilemedi. Firebase bağlantısını kontrol et ve tekrar dene.'}
             </p>
           )}
         </aside>

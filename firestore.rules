@@ -15,8 +15,8 @@ service cloud.firestore {
           && d.event == 'CHOOSING THE FLAVORS'
           && d.image is string
           && d.image.matches('^data:image/jpeg;base64,.*')
-          && d.image.size() < 900000
-          && d.ts is int;
+          && d.image.size() < 1040000
+          && d.ts is number;
       }
     }
   }
