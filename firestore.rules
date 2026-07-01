@@ -2,16 +2,14 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     match /flavors_entries/{entryId} {
-      // Herkes gönderebilir (isim + görsel kontrolü)
+      // Fotoğraf gönderme — giriş gerekmez
       allow create: if request.resource.data.name is string
         && request.resource.data.name.size() > 0
         && request.resource.data.name.size() <= 40
-        && request.resource.data.event == 'CHOOSING THE FLAVORS'
         && request.resource.data.image is string
-        && request.resource.data.image.size() > 0
-        && request.resource.data.image.size() < 1040000;
+        && request.resource.data.image.size() < 900000;
 
-      // Sadece giriş yapmış admin okur / siler
+      // Admin paneli — giriş şart
       allow read, delete: if request.auth != null;
       allow update: if false;
     }

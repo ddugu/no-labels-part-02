@@ -24,8 +24,8 @@ const localAdminPassword = () =>
   (import.meta.env.VITE_ADMIN_PASSWORD || 'nolabels-admin').trim()
 
 function canvasToUploadDataUrl(canvas) {
-  const maxLen = 380_000
-  let quality = 0.68
+  const maxLen = 320_000
+  let quality = 0.62
   let dataUrl = canvas.toDataURL('image/jpeg', quality)
 
   while (dataUrl.length > maxLen && quality > 0.45) {
@@ -43,10 +43,11 @@ function canvasToUploadDataUrl(canvas) {
   return tmp.toDataURL('image/jpeg', 0.65)
 }
 
-function firebaseErrorMessage(err) {
+function firebaseErrorMessage(err, extra = '') {
   const code = err?.code || ''
   if (code === 'permission-denied') {
-    return 'Firestore izni yok. Firebase Console → Firestore → Rules → Publish (firestore.rules dosyasındaki kurallar).'
+    const kb = extra ? ` (${extra})` : ''
+    return `Firestore reddetti${kb}. Sırayle: (1) Rules → Publish (2) API key → https://ddugu.github.io/no-labels-part-02/* (3) API restrictions → Don't restrict key`
   }
   if (code === 'unavailable' || code === 'not-found') {
     return 'Firestore bulunamadı. Firebase Console’da veritabanını oluştur.'
@@ -133,7 +134,8 @@ export async function addFlavorEntry(name, canvas) {
       return
     } catch (err) {
       if (err instanceof Error && err.message === TIMEOUT_MSG) throw err
-      throw new Error(firebaseErrorMessage(err))
+      const hint = `${Math.round(image.length / 1024)}KB görsel`
+      throw new Error(firebaseErrorMessage(err, hint))
     }
   }
 
