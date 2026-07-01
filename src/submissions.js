@@ -24,8 +24,8 @@ const localAdminPassword = () =>
   (import.meta.env.VITE_ADMIN_PASSWORD || 'nolabels-admin').trim()
 
 function canvasToUploadDataUrl(canvas) {
-  const maxLen = 480_000
-  let quality = 0.72
+  const maxLen = 380_000
+  let quality = 0.68
   let dataUrl = canvas.toDataURL('image/jpeg', quality)
 
   while (dataUrl.length > maxLen && quality > 0.45) {
@@ -46,7 +46,7 @@ function canvasToUploadDataUrl(canvas) {
 function firebaseErrorMessage(err) {
   const code = err?.code || ''
   if (code === 'permission-denied') {
-    return 'Firestore izni yok. Firebase Console → Firestore → Rules kısmını kontrol et.'
+    return 'Firestore izni yok. Firebase Console → Firestore → Rules → Publish (firestore.rules dosyasındaki kurallar).'
   }
   if (code === 'unavailable' || code === 'not-found') {
     return 'Firestore bulunamadı. Firebase Console’da veritabanını oluştur.'
