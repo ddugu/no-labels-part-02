@@ -6,9 +6,8 @@ import {
   deleteFlavorEntry,
   adminLogin,
   adminLogout,
-  isAdminLoggedIn,
+  watchAdminAuth,
 } from './submissions'
-import { resolveUploadUrl } from './api'
 import { assetUrl } from './assetUrl'
 
 function getRoute() {
@@ -389,12 +388,15 @@ function App() {
 }
 
 function AdminView() {
-  const [authed, setAuthed] = useState(() => isAdminLoggedIn())
+  const [authed, setAuthed] = useState(false)
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loginErr, setLoginErr] = useState('')
   const [loggingIn, setLoggingIn] = useState(false)
   const [entries, setEntries] = useState([])
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => watchAdminAuth(setAuthed), [])
 
   const loadEntries = () => {
     setLoading(true)
@@ -419,11 +421,10 @@ function AdminView() {
     setLoginErr('')
     setLoggingIn(true)
     try {
-      await adminLogin(password)
-      setAuthed(true)
+      await adminLogin(email, password)
       setPassword('')
     } catch {
-      setLoginErr('Yanlış şifre')
+      setLoginErr('Yanlış e-posta veya şifre')
     } finally {
       setLoggingIn(false)
     }
@@ -454,7 +455,17 @@ function AdminView() {
         <form className="admin-login" onSubmit={handleLogin}>
           <img src={assetUrl('popsicle.png')} alt="" className="admin-login__pop" aria-hidden="true" />
           <h1 className="admin-login__title">Admin Girişi</h1>
-          <p className="admin-login__hint">Bu sayfa yalnızca organizatörler içindir.</p>
+          <p className="admin-login__hint">
+            Firebase hesabınla giriş yap. (Yerelde Firebase yoksa sadece şifre yeter.)
+          </p>
+          <input
+            type="email"
+            className="admin-login__input"
+            placeholder="E-posta"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            autoComplete="username"
+          />
           <input
             type="password"
             className="admin-login__input"
@@ -490,11 +501,9 @@ function AdminView() {
         <p className="admin__empty">Henüz gönderi yok.</p>
       ) : (
         <div className="admin__grid">
-          {entries.map((e, i) => {
-            const imageUrl = resolveUploadUrl(e.image)
-            return (
+          {entries.map((e, i) => (
             <div key={e.id || e.ts || i} className="admin__card">
-              <img src={imageUrl} alt={`${e.name} gönderisi`} />
+              <img src={e.image} alt={`${e.name} gönderisi`} />
               <div className="admin__meta">
                 <strong>{e.name}</strong>
                 <span>{new Date(e.ts).toLocaleString('tr-TR')}</span>
@@ -502,7 +511,7 @@ function AdminView() {
               <div className="admin__row">
                 <a
                   className="admin__link"
-                  href={imageUrl}
+                  href={e.image}
                   target="_blank"
                   rel="noreferrer"
                   download={`${e.name}-flavors.jpg`}
@@ -518,8 +527,7 @@ function AdminView() {
                 </button>
               </div>
             </div>
-            )
-          })}
+          ))}
         </div>
       )}
     </main>

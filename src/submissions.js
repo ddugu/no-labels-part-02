@@ -1,91 +1,98 @@
-// Gönderi servisi — MongoDB API (Express) üzerinden çalışır.
-import { apiUrl } from './api'
+import {
+  collection,
+  addDoc,
+  getDocs,
+  deleteDoc,
+  doc,
+  query,
+  orderBy,
+} from 'firebase/firestore'
+import {
+  signInWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged,
+} from 'firebase/auth'
+import { firebaseEnabled, db, auth } from './firebase'
 
+const COL = 'flavors_entries'
 const LS_KEY = 'nl_flavors_entries'
-const ADMIN_KEY = 'nl_admin_key'
+const LOCAL_ADMIN = 'nl_admin_local'
 const EVENT = 'CHOOSING THE FLAVORS'
-const API = '/api/flavors'
 
-const canvasToBlob = (canvas) =>
-  new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.85))
+const localAdminPassword = () =>
+  (import.meta.env.VITE_ADMIN_PASSWORD || 'nolabels-admin').trim()
 
-async function apiOk() {
-  try {
-    const r = await fetch(apiUrl('/api/health'))
-    return r.ok
-  } catch {
-    return false
+export function watchAdminAuth(callback) {
+  if (firebaseEnabled && auth) {
+    return onAuthStateChanged(auth, (user) => callback(Boolean(user)))
   }
-}
-
-function adminHeaders() {
-  const key = sessionStorage.getItem(ADMIN_KEY)
-  return key ? { 'X-Admin-Key': key } : {}
+  callback(sessionStorage.getItem(LOCAL_ADMIN) === '1')
+  return () => {}
 }
 
 export function isAdminLoggedIn() {
-  return Boolean(sessionStorage.getItem(ADMIN_KEY))
+  if (firebaseEnabled && auth) return Boolean(auth.currentUser)
+  return sessionStorage.getItem(LOCAL_ADMIN) === '1'
 }
 
-export function adminLogout() {
-  sessionStorage.removeItem(ADMIN_KEY)
+export async function adminLogin(email, password) {
+  const pass = String(password || '').trim()
+  if (firebaseEnabled && auth) {
+    const mail = String(email || '').trim()
+    if (!mail) throw new Error('E-posta gerekli')
+    await signInWithEmailAndPassword(auth, mail, pass)
+    return
+  }
+  if (pass !== localAdminPassword()) throw new Error('Yanlış şifre')
+  sessionStorage.setItem(LOCAL_ADMIN, '1')
 }
 
-export async function adminLogin(password) {
-  const clean = String(password || '').trim()
-  const r = await fetch(apiUrl('/api/admin/login'), {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ password: clean }),
-  })
-  if (!r.ok) throw new Error('Yanlış şifre')
-  sessionStorage.setItem(ADMIN_KEY, clean)
+export async function adminLogout() {
+  if (firebaseEnabled && auth && auth.currentUser) {
+    await signOut(auth)
+    return
+  }
+  sessionStorage.removeItem(LOCAL_ADMIN)
 }
 
 export async function addFlavorEntry(name, canvas) {
-  const blob = await canvasToBlob(canvas)
-  if (!blob) throw new Error('Görsel oluşturulamadı')
+  const image = canvas.toDataURL('image/jpeg', 0.85)
+  const entry = { name, event: EVENT, image, ts: Date.now() }
 
-  if (await apiOk()) {
-    const fd = new FormData()
-    fd.append('name', name)
-    fd.append('image', blob, 'flavors.jpg')
-    const r = await fetch(apiUrl(API), { method: 'POST', body: fd })
-    if (!r.ok) throw new Error('API hatası')
+  if (firebaseEnabled && db) {
+    await addDoc(collection(db, COL), entry)
     return
   }
 
-  // Canlı sitede API şart; yerelde API kapalıysa localStorage yedek
-  if (import.meta.env.PROD) throw new Error('API kapalı')
-  const dataUrl = canvas.toDataURL('image/jpeg', 0.85)
+  if (import.meta.env.PROD) throw new Error('Firebase yapılandırılmamış')
+
   const list = JSON.parse(localStorage.getItem(LS_KEY) || '[]')
-  list.push({ name, event: EVENT, image: dataUrl, ts: Date.now() })
+  list.push({ ...entry, id: `local-${Date.now()}` })
   localStorage.setItem(LS_KEY, JSON.stringify(list))
 }
 
 export async function getFlavorEntries() {
-  if (await apiOk()) {
-    const r = await fetch(apiUrl(API), { headers: adminHeaders() })
-    if (r.status === 401) throw new Error('UNAUTHORIZED')
-    if (!r.ok) throw new Error('API hatası')
-    return r.json()
+  if (firebaseEnabled && db) {
+    if (!auth?.currentUser) throw new Error('UNAUTHORIZED')
+    const snap = await getDocs(
+      query(collection(db, COL), orderBy('ts', 'desc')),
+    )
+    return snap.docs.map((d) => ({ id: d.id, ...d.data() }))
   }
+
   if (!isAdminLoggedIn()) throw new Error('UNAUTHORIZED')
   const list = JSON.parse(localStorage.getItem(LS_KEY) || '[]')
   return list.sort((a, b) => b.ts - a.ts)
 }
 
 export async function deleteFlavorEntry(entry) {
-  if (await apiOk() && entry.id) {
-    const r = await fetch(apiUrl(`${API}/${entry.id}`), {
-      method: 'DELETE',
-      headers: adminHeaders(),
-    })
-    if (r.status === 401) throw new Error('UNAUTHORIZED')
-    if (!r.ok) throw new Error('API hatası')
+  if (firebaseEnabled && db && entry.id) {
+    if (!auth?.currentUser) throw new Error('UNAUTHORIZED')
+    await deleteDoc(doc(db, COL, entry.id))
     return
   }
+
   const list = JSON.parse(localStorage.getItem(LS_KEY) || '[]')
-  const next = list.filter((e) => e.ts !== entry.ts)
+  const next = list.filter((e) => e.id !== entry.id && e.ts !== entry.ts)
   localStorage.setItem(LS_KEY, JSON.stringify(next))
 }

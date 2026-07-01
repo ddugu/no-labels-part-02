@@ -1,9 +1,6 @@
-// Firebase yapılandırması — anahtarlar .env dosyasından okunur.
-// .env yoksa/boşsa firebaseEnabled = false olur ve uygulama
-// otomatik olarak yerel (localStorage) moda düşer.
 import { initializeApp } from 'firebase/app'
 import { getFirestore } from 'firebase/firestore'
-import { getStorage } from 'firebase/storage'
+import { getAuth } from 'firebase/auth'
 
 const cfg = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -17,12 +14,12 @@ const cfg = {
 export const firebaseEnabled = Boolean(cfg.apiKey && cfg.projectId)
 
 let db = null
-let storage = null
+let auth = null
 
 if (firebaseEnabled) {
   const app = initializeApp(cfg)
   db = getFirestore(app)
-  storage = getStorage(app)
+  auth = getAuth(app)
 }
 
-export { db, storage }
+export { db, auth }
