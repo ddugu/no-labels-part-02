@@ -56,6 +56,15 @@ function firebaseErrorMessage(err) {
   return err?.message || 'Firebase hatası'
 }
 
+function withTimeout(promise, ms, message) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => {
+      setTimeout(() => reject(new Error(message)), ms)
+    }),
+  ])
+}
+
 export function watchAdminAuth(callback) {
   if (firebaseEnabled && auth) {
     return onAuthStateChanged(auth, (user) => callback(Boolean(user)))
@@ -95,7 +104,11 @@ export async function addFlavorEntry(name, canvas) {
 
   if (firebaseEnabled && db) {
     try {
-      await addDoc(collection(db, COL), entry)
+      await withTimeout(
+        addDoc(collection(db, COL), entry),
+        20_000,
+        'Bağlantı zaman aşımı. Firebase Console’da Firestore açık mı ve Rules publish edildi mi?',
+      )
       return
     } catch (err) {
       throw new Error(firebaseErrorMessage(err))

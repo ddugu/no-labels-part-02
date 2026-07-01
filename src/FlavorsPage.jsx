@@ -166,12 +166,14 @@ export default function FlavorsPage({ onBack }) {
             </button>
           </div>
 
-          {!canSubmit && submitState !== 'done' && (
-            <p className="flavors__hint">
-              {!photoReady
-                ? 'Önce galeriden bir fotoğraf seç.'
-                : 'Göndermek için yukarıya adını yaz.'}
-            </p>
+          {submitState === 'sending' && (
+            <p className="flavors__hint">Firebase&apos;e kaydediliyor…</p>
+          )}
+          {submitState === 'idle' && !photoReady && (
+            <p className="flavors__hint">Önce galeriden bir fotoğraf seç.</p>
+          )}
+          {submitState === 'idle' && photoReady && !fanName.trim() && (
+            <p className="flavors__hint">Göndermek için yukarıya adını yaz.</p>
           )}
 
           {submitState === 'done' && (
