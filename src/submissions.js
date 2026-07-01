@@ -43,11 +43,12 @@ function canvasToUploadDataUrl(canvas) {
   return tmp.toDataURL('image/jpeg', 0.65)
 }
 
-function firebaseErrorMessage(err, extra = '') {
+function firebaseErrorMessage(err) {
   const code = err?.code || ''
   if (code === 'permission-denied') {
-    const kb = extra ? ` (${extra})` : ''
-    return `Firestore reddetti${kb}. Sırayle: (1) Rules → Publish (2) API key → https://ddugu.github.io/no-labels-part-02/* (3) API restrictions → Don't restrict key`
+    return import.meta.env.PROD
+      ? 'Firebase API key canlı siteyi engelliyor. Google Cloud → API key → Application restrictions: None. Ya da npm run deploy:firebase ile no-labels-part2.web.app kullan.'
+      : 'Firestore izni yok — Rules Publish et.'
   }
   if (code === 'unavailable' || code === 'not-found') {
     return 'Firestore bulunamadı. Firebase Console’da veritabanını oluştur.'
@@ -134,8 +135,7 @@ export async function addFlavorEntry(name, canvas) {
       return
     } catch (err) {
       if (err instanceof Error && err.message === TIMEOUT_MSG) throw err
-      const hint = `${Math.round(image.length / 1024)}KB görsel`
-      throw new Error(firebaseErrorMessage(err, hint))
+      throw new Error(firebaseErrorMessage(err))
     }
   }
 
