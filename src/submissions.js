@@ -6,6 +6,7 @@ import {
   doc,
   query,
   orderBy,
+  limit,
 } from 'firebase/firestore'
 import {
   signInWithEmailAndPassword,
@@ -23,8 +24,8 @@ const localAdminPassword = () =>
   (import.meta.env.VITE_ADMIN_PASSWORD || 'nolabels-admin').trim()
 
 function canvasToUploadDataUrl(canvas) {
-  const maxLen = 850_000
-  let quality = 0.78
+  const maxLen = 480_000
+  let quality = 0.72
   let dataUrl = canvas.toDataURL('image/jpeg', quality)
 
   while (dataUrl.length > maxLen && quality > 0.45) {
@@ -63,6 +64,26 @@ function withTimeout(promise, ms, message) {
       setTimeout(() => reject(new Error(message)), ms)
     }),
   ])
+}
+
+const TIMEOUT_MSG =
+  'Firestore\'a bağlanılamıyor. Rules → Publish yaptın mı? Reklam engelleyici/VPN kapat, sayfayı yenile.'
+
+export async function checkFirestoreConnection() {
+  if (!firebaseEnabled || !db) {
+    return { ok: false, reason: 'Firebase .env ayarları eksik' }
+  }
+  try {
+    await withTimeout(
+      getDocs(query(collection(db, COL), limit(1))),
+      12_000,
+      TIMEOUT_MSG,
+    )
+    return { ok: true }
+  } catch (err) {
+    if (err?.code === 'permission-denied') return { ok: true }
+    return { ok: false, reason: err?.message || 'Bağlantı hatası' }
+  }
 }
 
 export function watchAdminAuth(callback) {
@@ -106,11 +127,12 @@ export async function addFlavorEntry(name, canvas) {
     try {
       await withTimeout(
         addDoc(collection(db, COL), entry),
-        20_000,
-        'Bağlantı zaman aşımı. Firebase Console’da Firestore açık mı ve Rules publish edildi mi?',
+        45_000,
+        TIMEOUT_MSG,
       )
       return
     } catch (err) {
+      if (err instanceof Error && err.message === TIMEOUT_MSG) throw err
       throw new Error(firebaseErrorMessage(err))
     }
   }
