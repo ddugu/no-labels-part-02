@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { addFlavorEntry } from './submissions'
 import { drawFrameComposite } from './frameUtils'
+import { assetUrl } from './assetUrl'
 
 export default function FlavorsPage({ onBack }) {
   const [fanName, setFanName] = useState('')
@@ -12,7 +13,7 @@ export default function FlavorsPage({ onBack }) {
 
   useEffect(() => {
     const img = new Image()
-    img.src = '/frame.png'
+    img.src = assetUrl('frame.png')
     img.onload = () => {
       frameRef.current = img
     }
@@ -84,7 +85,7 @@ export default function FlavorsPage({ onBack }) {
         <div className="flavors-page__preview">
           {!photoReady && (
             <div className="flavors-page__empty">
-              <img src="/frame.png" alt="" aria-hidden="true" />
+              <img src={assetUrl('frame.png')} alt="" aria-hidden="true" />
               <span>Önizleme burada görünecek</span>
             </div>
           )}

@@ -9,6 +9,7 @@ import {
   isAdminLoggedIn,
 } from './submissions'
 import { resolveUploadUrl } from './api'
+import { assetUrl } from './assetUrl'
 
 function getRoute() {
   const hash = typeof window !== 'undefined' ? window.location.hash.slice(1) : ''
@@ -133,7 +134,7 @@ function App() {
     >
       <div className="brand">
         <img
-          src="/logo.png"
+          src={assetUrl('logo.png')}
           alt="Too Cool To Label Campaign"
           className="brand-logo"
         />
@@ -146,7 +147,7 @@ function App() {
           {popsicles.map((p, i) => (
             <img
               key={i}
-              src="/popsicle.png"
+              src={assetUrl('popsicle.png')}
               alt=""
               className="popsicle"
               style={{
@@ -164,7 +165,7 @@ function App() {
         {/* Konvoy: araba "NO LABELS" pankartını arkasından çeker */}
         <div className="convoy">
           <div className="convoy__truck">
-            <img src="/truck.png" alt="" className="convoy__img" />
+            <img src={assetUrl('truck.png')} alt="" className="convoy__img" />
           </div>
 
           <div className="convoy__banner">
@@ -183,7 +184,11 @@ function App() {
         </div>
 
         {/* peşlerinden koşan karakter (sprite döngüsü) */}
-        <div className="runner" aria-hidden="true" />
+        <div
+          className="runner"
+          aria-hidden="true"
+          style={{ backgroundImage: `url(${assetUrl('runner-sheet.png')})` }}
+        />
 
         {/* 1) Arcade makinesi: tıkla, yuvadan bilet çıksın */}
         <div
@@ -200,13 +205,13 @@ function App() {
               onClick={() => scene === 'arcade' && setScene('ticket')}
               aria-label="Bilet almak için makineye dokun"
             >
-              <img src="/arcade.png" alt="Too Cool To Label arcade makinesi" />
+              <img src={assetUrl('arcade.png')} alt="Too Cool To Label arcade makinesi" />
             </button>
           </div>
 
           {/* makineden çıkıp ekrana doğru büyüyen bilet */}
           <img
-            src="/ticket.png"
+            src={assetUrl('ticket.png')}
             alt="No Labels bileti"
             className="slot-ticket"
           />
@@ -238,7 +243,7 @@ function App() {
           }`}
         >
           <div className="poster-wrap">
-            <img src="/poster.png" alt="No Labels Part 02 — Yeonjun" className="poster-img" />
+            <img src={assetUrl('poster.png')} alt="No Labels Part 02 — Yeonjun" className="poster-img" />
             {EVENTS.map((ev) => (
               <button
                 key={ev.id}
@@ -285,7 +290,7 @@ function App() {
             >
               ×
             </button>
-            <img src="/popsicle.png" alt="" className="guide__pop" aria-hidden="true" />
+            <img src={assetUrl('popsicle.png')} alt="" className="guide__pop" aria-hidden="true" />
             <h3 className="guide__title" id="guide-title">
               ETKİNLİK REHBERİ
             </h3>
@@ -447,7 +452,7 @@ function AdminView() {
     return (
       <main className="admin admin--login">
         <form className="admin-login" onSubmit={handleLogin}>
-          <img src="/popsicle.png" alt="" className="admin-login__pop" aria-hidden="true" />
+          <img src={assetUrl('popsicle.png')} alt="" className="admin-login__pop" aria-hidden="true" />
           <h1 className="admin-login__title">Admin Girişi</h1>
           <p className="admin-login__hint">Bu sayfa yalnızca organizatörler içindir.</p>
           <input

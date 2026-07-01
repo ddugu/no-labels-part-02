@@ -154,7 +154,7 @@
   z-index: 4;
   width: 229px;
   height: 260px;
-  background-image: url('/runner-sheet.png');
+  /* sprite sheet — url App.jsx inline style ile gelir */
   background-repeat: no-repeat;
   background-size: 1603px 260px;
   background-position: 0 0;
