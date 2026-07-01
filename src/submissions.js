@@ -106,7 +106,22 @@ export async function adminLogin(email, password) {
   if (firebaseEnabled && auth) {
     const mail = String(email || '').trim()
     if (!mail) throw new Error('E-posta gerekli')
-    await signInWithEmailAndPassword(auth, mail, pass)
+    try {
+      await signInWithEmailAndPassword(auth, mail, pass)
+    } catch (err) {
+      const code = err?.code || ''
+      if (code === 'auth/invalid-credential' || code === 'auth/wrong-password' || code === 'auth/user-not-found') {
+        throw new Error('Yanlış e-posta veya şifre')
+      }
+      if (code === 'auth/invalid-email') throw new Error('Geçersiz e-posta adresi')
+      if (code === 'auth/operation-not-allowed') {
+        throw new Error('Firebase → Authentication → Email/Password açık değil')
+      }
+      if (code === 'auth/unauthorized-domain') {
+        throw new Error('Bu domain yetkili değil. Firebase → Authentication → Settings → no-labels-part2.web.app ekle')
+      }
+      throw new Error(err?.message || 'Giriş başarısız')
+    }
     return
   }
   if (pass !== localAdminPassword()) throw new Error('Yanlış şifre')

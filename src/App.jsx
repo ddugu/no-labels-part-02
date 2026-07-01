@@ -423,8 +423,8 @@ function AdminView() {
     try {
       await adminLogin(email, password)
       setPassword('')
-    } catch {
-      setLoginErr('Yanlış e-posta veya şifre')
+    } catch (err) {
+      setLoginErr(err.message || 'Yanlış e-posta veya şifre')
     } finally {
       setLoggingIn(false)
     }
@@ -456,7 +456,7 @@ function AdminView() {
           <img src={assetUrl('popsicle.png')} alt="" className="admin-login__pop" aria-hidden="true" />
           <h1 className="admin-login__title">Admin Girişi</h1>
           <p className="admin-login__hint">
-            Firebase hesabınla giriş yap. (Yerelde Firebase yoksa sadece şifre yeter.)
+            Firebase Authentication’da oluşturduğun e-posta + şifre ile gir.
           </p>
           <input
             type="email"
