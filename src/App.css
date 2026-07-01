@@ -1,0 +1,1420 @@
+/* ============================================================
+   NO LABELS PART 02 — Giriş sahnesi
+   Araba "NO LABELS" pankartını kısa iple ortaya çeker,
+   sonra ipi bırakıp tek başına ekrandan çıkar.
+   ============================================================ */
+
+.stage {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  overflow: hidden;
+  background: #aebfd9;
+}
+
+/* flavors/admin açıkken arka sahne unmount olmasın, sadece gizlensin */
+.stage--hidden {
+  visibility: hidden;
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+}
+
+/* poster aşamasında intro katmanları tamamen kapat — sadece poster kalsın */
+.stage.scene-poster .convoy,
+.stage.scene-poster .runner,
+.stage.scene-poster .arcade-scene {
+  display: none !important;
+}
+
+.stage.scene-poster .poster-overlay {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+
+.stage.scene-poster .poster-hint,
+.stage.scene-poster .disclaimer.show {
+  opacity: 1;
+}
+
+.hero {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  overflow: hidden;
+  background: #aebfd9;
+}
+
+/* ----------------------------------------------------------------
+   DONDURMA YAĞMURU
+   ---------------------------------------------------------------- */
+.popsicles {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.popsicle {
+  position: absolute;
+  top: -12%;
+  height: auto;
+  image-rendering: pixelated;
+  opacity: 0;
+  filter: drop-shadow(0 4px 6px rgba(35, 63, 99, 0.12));
+  will-change: transform, opacity;
+  animation-name: popsicleFall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+/* ----------------------------------------------------------------
+   KONVOY: araba + kısa ip + pankart
+   ---------------------------------------------------------------- */
+.convoy {
+  position: absolute;
+  top: 47%;
+  left: 0;
+  width: 100%;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  transform: translate(80vw, -50%);
+  animation: convoyPull 1.8s cubic-bezier(0.33, 0, 0.18, 1) 0.8s forwards;
+}
+
+.convoy__truck {
+  flex: 0 0 auto;
+  width: clamp(220px, 34vw, 540px);
+  /* 2. aşama: tek başına sola çıkış */
+  animation: truckAway 1s cubic-bezier(0.5, 0, 0.85, 0.35) 2.6s forwards;
+}
+
+/* yazıyı ekranda tam ortalayan görünmez denge boşluğu
+   (araba genişliği + araba-yazı arası boşluk kadar) */
+.convoy__spacer {
+  flex: 0 0 auto;
+  width: calc(clamp(220px, 34vw, 540px) + clamp(1rem, 3vw, 3rem));
+}
+
+.convoy__img {
+  display: block;
+  width: 100%;
+  height: auto;
+  image-rendering: pixelated;
+}
+
+/* düz lacivert yazı (çerçeve/kutu yok) */
+.convoy__banner {
+  flex: 0 0 auto;
+  margin-left: clamp(1rem, 3vw, 3rem);
+  text-align: center;
+  /* 3. aşama: araba yönünde sola kayıp gider (geri gelmez) */
+  animation: bannerRunOff 0.9s cubic-bezier(0.5, 0, 0.85, 0.35) 4.2s forwards;
+}
+
+.convoy__title {
+  font-family: 'Anton', sans-serif;
+  font-weight: 400;
+  color: var(--navy);
+  font-size: clamp(2.4rem, 10.5vw, 8.5rem);
+  line-height: 1;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.convoy__sub {
+  margin-top: clamp(0.3rem, 1vw, 0.8rem);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.5rem, 1.6vw, 1.2rem);
+  font-family: 'Anton', sans-serif;
+  color: var(--navy);
+  font-size: clamp(0.95rem, 3vw, 2.4rem);
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+.convoy__dot {
+  color: rgba(35, 63, 99, 0.45);
+}
+
+/* ----------------------------------------------------------------
+   PEŞLERİNDEN KOŞAN KARAKTER
+   ---------------------------------------------------------------- */
+.runner {
+  position: absolute;
+  top: 47%;
+  left: 0;
+  z-index: 4;
+  width: 229px;
+  height: 260px;
+  background-image: url('/runner-sheet.png');
+  background-repeat: no-repeat;
+  background-size: 1603px 260px;
+  background-position: 0 0;
+  transform-origin: center center;
+  /* yüz çizimdeki gibi (çevirme yok); hareket sola */
+  transform: translateX(110vw) translateY(-50%) scale(0.78);
+  /* 1) ekranı geçiş  2) bacakların koşma döngüsü */
+  animation: runnerRun 3s linear 5s forwards,
+    runLegs 0.9s steps(7) infinite;
+}
+
+/* ----------------------------------------------------------------
+   MARKA LOGOSU (sol üst köşe, giriş bitince belirir)
+   ---------------------------------------------------------------- */
+.brand {
+  position: fixed;
+  top: clamp(0.6rem, 1.8vw, 1.4rem);
+  left: clamp(0.6rem, 1.8vw, 1.4rem);
+  z-index: 8;
+  display: flex;
+  align-items: center;
+  gap: clamp(0.4rem, 1vw, 0.9rem);
+  pointer-events: none;
+}
+
+.brand-logo {
+  width: clamp(88px, 11vw, 148px);
+  height: auto;
+  transform: rotate(-4deg);
+  filter: drop-shadow(0 6px 12px rgba(26, 47, 75, 0.22));
+}
+
+.brand-text {
+  font-family: 'Anton', sans-serif;
+  font-weight: 400;
+  color: var(--navy);
+  font-size: clamp(0.7rem, 1.3vw, 1.15rem);
+  line-height: 1;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  /* yazıyı dondurmanın gövde ortası hizasına çek */
+  transform: translateY(clamp(-2rem, -3vw, -1.1rem));
+}
+
+/* ----------------------------------------------------------------
+   ARCADE SAHNESİ (insan geçtikten sonra gelir)
+   ---------------------------------------------------------------- */
+.arcade-scene {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(0.6rem, 2vw, 1.4rem);
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+  pointer-events: none;
+}
+
+.arcade-scene.show {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.arcade-wrap {
+  position: relative;
+  display: inline-block;
+  line-height: 0;
+}
+
+.arcade-machine {
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  line-height: 0;
+  filter: drop-shadow(0 14px 26px rgba(26, 47, 75, 0.28));
+  transition: transform 0.25s ease, filter 0.25s ease;
+}
+
+.arcade-machine img {
+  display: block;
+  max-height: 66vh;
+  max-width: 88vw;
+  width: auto;
+  height: auto;
+  image-rendering: pixelated;
+  animation: arcadeFloat 3.5s ease-in-out infinite;
+}
+
+/* sadece bilet henüz çıkmadıysa hover efekti */
+.scene-arcade .arcade-machine:hover,
+.scene-arcade .arcade-machine:focus-visible {
+  outline: none;
+  transform: translateY(-4px) scale(1.02);
+  filter: drop-shadow(0 20px 32px rgba(26, 47, 75, 0.36));
+}
+
+.scene-ticket .arcade-machine {
+  cursor: default;
+}
+
+/* makineden çıkıp dikey kayarak ekrana doğru büyüyen bilet */
+.slot-ticket {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(560px, 84vw);
+  height: auto;
+  image-rendering: pixelated;
+  transform-origin: center center;
+  transform: translate(-50%, -50%) translate(2vw, 24vh) scale(0.06)
+    rotate(-6deg);
+  opacity: 0;
+  filter: drop-shadow(0 16px 30px rgba(26, 47, 75, 0.32));
+  pointer-events: none;
+  z-index: 6;
+}
+
+.scene-ticket .slot-ticket {
+  animation: slotDispense 1.2s cubic-bezier(0.25, 0.9, 0.3, 1) 0.1s forwards;
+}
+
+/* bilet çıkarken makine geri planda kalsın */
+.scene-ticket .arcade-machine {
+  opacity: 0.5;
+  transition: opacity 0.6s ease;
+}
+
+.arcade-hint {
+  position: absolute;
+  bottom: clamp(1.2rem, 4vh, 3rem);
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'Oswald', sans-serif;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-size: clamp(0.72rem, 1.3vw, 0.95rem);
+  color: rgba(26, 47, 75, 0.72);
+  animation: hintPulse 2.2s ease-in-out infinite;
+}
+
+.ticket-cta {
+  position: absolute;
+  bottom: clamp(1.2rem, 4vh, 3rem);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(0.5rem, 1.5vw, 0.9rem);
+  opacity: 0;
+  animation: ctaIn 0.6s ease 1.25s forwards;
+}
+
+.ticket-cta__text {
+  font-family: 'Anton', sans-serif;
+  color: var(--navy);
+  font-size: clamp(1.1rem, 3vw, 1.8rem);
+  letter-spacing: 0.02em;
+}
+
+.ticket-cta__btn {
+  border: none;
+  cursor: pointer;
+  font-family: 'Oswald', sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-size: clamp(0.85rem, 1.6vw, 1.05rem);
+  color: var(--cream);
+  background: var(--navy);
+  padding: 0.9rem 2.6rem;
+  border-radius: 999px;
+  transition: background 0.25s ease, transform 0.2s ease;
+}
+
+.ticket-cta__btn:hover {
+  background: var(--navy-deep);
+  transform: translateY(-2px);
+}
+
+/* ----------------------------------------------------------------
+   İNTERAKTİF POSTER (bilet sonrası açılır)
+   ---------------------------------------------------------------- */
+.poster-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.6rem, 1.5vw, 1.2rem);
+  padding: clamp(0.6rem, 2vw, 1.4rem);
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 1s ease, transform 1s ease;
+  pointer-events: none;
+}
+
+.poster-overlay.show {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.poster-wrap {
+  position: relative;
+  display: inline-block;
+  line-height: 0;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 18px 46px rgba(26, 47, 75, 0.32);
+}
+
+.poster-img {
+  display: block;
+  max-height: 86vh;
+  max-width: 94vw;
+  width: auto;
+  height: auto;
+}
+
+/* buz küpü tıklama noktaları */
+.hotspot {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  border: 2px solid transparent;
+  border-radius: 12px;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.2s ease, border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.hotspot__badge {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  width: clamp(18px, 2vw, 24px);
+  height: clamp(18px, 2vw, 24px);
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--navy);
+  color: var(--cream);
+  font-family: 'Anton', sans-serif;
+  font-size: clamp(0.6rem, 1vw, 0.8rem);
+  opacity: 0;
+  transform: scale(0.7);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.hotspot:hover,
+.hotspot:focus-visible {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.9);
+  background: rgba(35, 63, 99, 0.12);
+  box-shadow: 0 0 0 2px rgba(35, 63, 99, 0.35),
+    0 6px 18px rgba(26, 47, 75, 0.25);
+}
+
+.hotspot:hover .hotspot__badge,
+.hotspot:focus-visible .hotspot__badge {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.poster-hint {
+  font-family: 'Oswald', sans-serif;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-size: clamp(0.7rem, 1.2vw, 0.85rem);
+  color: rgba(26, 47, 75, 0.7);
+  animation: hintPulse 2.2s ease-in-out infinite;
+}
+
+/* ----------------------------------------------------------------
+   ETKİNLİK DETAY KUTUSU (modal)
+   ---------------------------------------------------------------- */
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.2rem;
+  background: rgba(20, 33, 52, 0.55);
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.25s ease forwards;
+}
+
+.modal__card {
+  position: relative;
+  width: min(460px, 92vw);
+  max-height: 92vh;
+  overflow-y: auto;
+  background: var(--cream);
+  border-radius: 20px;
+  padding: clamp(1.8rem, 4vw, 2.6rem);
+  box-shadow: 0 24px 60px rgba(20, 33, 52, 0.4);
+  border: 1px solid rgba(35, 63, 99, 0.12);
+  animation: modalPop 0.35s cubic-bezier(0.2, 0.8, 0.3, 1.2) forwards;
+}
+
+.modal__close {
+  position: absolute;
+  top: 0.8rem;
+  right: 1rem;
+  border: none;
+  background: transparent;
+  color: var(--navy);
+  font-size: 1.9rem;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0.55;
+  transition: opacity 0.2s ease;
+}
+
+.modal__close:hover {
+  opacity: 1;
+}
+
+.modal__no {
+  font-family: 'Anton', sans-serif;
+  font-size: clamp(2.2rem, 6vw, 3.2rem);
+  color: var(--pink);
+  -webkit-text-stroke: 1px rgba(35, 63, 99, 0.5);
+  line-height: 1;
+}
+
+.modal__title {
+  margin: 0.4rem 0 0.9rem;
+  font-family: 'Anton', sans-serif;
+  font-weight: 400;
+  font-size: clamp(1.4rem, 4vw, 2rem);
+  color: var(--navy);
+  letter-spacing: 0.01em;
+}
+
+.modal__desc {
+  margin: 0 0 1.6rem;
+  font-family: 'Oswald', sans-serif;
+  font-size: clamp(0.92rem, 2vw, 1.05rem);
+  line-height: 1.55;
+  color: rgba(26, 47, 75, 0.85);
+}
+
+.modal__start {
+  display: inline-block;
+  border: none;
+  cursor: pointer;
+  font-family: 'Oswald', sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-size: clamp(0.85rem, 1.6vw, 1rem);
+  color: var(--cream);
+  background: var(--navy);
+  padding: 0.85rem 2.4rem;
+  border-radius: 999px;
+  transition: background 0.25s ease, transform 0.2s ease;
+}
+
+.modal__start:hover {
+  background: var(--navy-deep);
+  transform: translateY(-2px);
+}
+
+/* ----------------------------------------------------------------
+   TANITIM REHBERİ (poster gelince açılır, dondurma temalı)
+   ---------------------------------------------------------------- */
+.guide {
+  position: fixed;
+  inset: 0;
+  z-index: 28;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.2rem;
+  background: rgba(20, 33, 52, 0.5);
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.3s ease forwards;
+}
+
+.guide__card {
+  position: relative;
+  width: min(460px, 92vw);
+  max-height: 88vh;
+  overflow-y: auto;
+  margin-top: 2.2rem;
+  background: linear-gradient(180deg, #f7e8eb 0%, #f3dde1 100%);
+  border: 2px solid #eccdd4;
+  border-radius: 26px;
+  padding: clamp(2.2rem, 5vw, 3rem) clamp(1.5rem, 4vw, 2.4rem)
+    clamp(1.6rem, 4vw, 2.2rem);
+  box-shadow: 0 24px 60px rgba(20, 33, 52, 0.4);
+  text-align: center;
+  animation: modalPop 0.4s cubic-bezier(0.2, 0.8, 0.3, 1.2) forwards;
+}
+
+.guide__pop {
+  position: absolute;
+  top: -34px;
+  left: 50%;
+  transform: translateX(-50%) rotate(-8deg);
+  width: 58px;
+  height: auto;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 6px 10px rgba(26, 47, 75, 0.25));
+}
+
+.guide__close {
+  position: absolute;
+  top: 0.7rem;
+  right: 1rem;
+  border: none;
+  background: transparent;
+  color: var(--navy);
+  font-size: 1.8rem;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0.5;
+  transition: opacity 0.2s ease;
+}
+
+.guide__close:hover {
+  opacity: 1;
+}
+
+.guide__title {
+  margin: 0.2rem 0 0.6rem;
+  font-family: 'Anton', sans-serif;
+  font-weight: 400;
+  font-size: clamp(1.4rem, 4.5vw, 2rem);
+  color: var(--navy);
+  letter-spacing: 0.03em;
+}
+
+.guide__intro {
+  margin: 0 0 1.2rem;
+  font-family: 'Oswald', sans-serif;
+  font-size: clamp(0.9rem, 2vw, 1rem);
+  line-height: 1.5;
+  color: rgba(26, 47, 75, 0.8);
+}
+
+.guide__list {
+  list-style: none;
+  margin: 0 0 1.6rem;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  text-align: left;
+}
+
+.guide__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  background: rgba(255, 255, 255, 0.55);
+  border-radius: 14px;
+  padding: 0.7rem 0.85rem;
+}
+
+.guide__no {
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--navy);
+  color: var(--cream);
+  font-family: 'Anton', sans-serif;
+  font-size: 0.9rem;
+}
+
+.guide__text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.guide__text strong {
+  font-family: 'Anton', sans-serif;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  color: var(--navy);
+  font-size: clamp(0.9rem, 2vw, 1.02rem);
+}
+
+.guide__text span {
+  font-family: 'Oswald', sans-serif;
+  font-size: clamp(0.78rem, 1.7vw, 0.9rem);
+  line-height: 1.4;
+  color: rgba(26, 47, 75, 0.75);
+}
+
+.guide__btn {
+  border: none;
+  cursor: pointer;
+  font-family: 'Oswald', sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-size: clamp(0.85rem, 1.6vw, 1rem);
+  color: var(--cream);
+  background: var(--navy);
+  padding: 0.85rem 2.4rem;
+  border-radius: 999px;
+  transition: background 0.25s ease, transform 0.2s ease;
+}
+
+/* ----------------------------------------------------------------
+   CHOOSING THE FLAVORS (foto + çerçeve)
+   ---------------------------------------------------------------- */
+.flavors {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.flavors__stage {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 26vh;
+}
+
+.flavors__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  color: rgba(26, 47, 75, 0.55);
+  font-family: 'Oswald', sans-serif;
+  font-size: 0.85rem;
+}
+
+.flavors__empty img {
+  max-height: 24vh;
+  width: auto;
+  opacity: 0.35;
+}
+
+.flavors__canvas {
+  display: none;
+  max-width: 100%;
+  max-height: 46vh;
+  width: auto;
+  height: auto;
+  border-radius: 10px;
+  box-shadow: 0 10px 24px rgba(26, 47, 75, 0.25);
+}
+
+.flavors__canvas.show {
+  display: block;
+}
+
+.flavors__file {
+  display: none;
+}
+
+.flavors__name {
+  width: 100%;
+  border: 1.5px solid rgba(35, 63, 99, 0.25);
+  border-radius: 12px;
+  padding: 0.7rem 0.9rem;
+  font-family: 'Oswald', sans-serif;
+  font-size: 0.95rem;
+  color: var(--navy);
+  background: #fffdf8;
+}
+
+.flavors__name:focus {
+  outline: none;
+  border-color: var(--navy);
+}
+
+.flavors__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  justify-content: center;
+}
+
+.flavors__btn {
+  flex: 1 1 auto;
+  min-width: 110px;
+  border: none;
+  cursor: pointer;
+  font-family: 'Oswald', sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  color: var(--cream);
+  background: var(--navy);
+  padding: 0.75rem 1.1rem;
+  border-radius: 999px;
+  transition: background 0.2s ease, transform 0.2s ease, opacity 0.2s ease;
+}
+
+.flavors__btn:hover:not(:disabled) {
+  background: var(--navy-deep);
+  transform: translateY(-2px);
+}
+
+.flavors__btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.flavors__btn--ghost {
+  background: transparent;
+  color: var(--navy);
+  border: 1.5px solid var(--navy);
+}
+
+.flavors__btn--ghost:hover:not(:disabled) {
+  background: rgba(35, 63, 99, 0.08);
+}
+
+.flavors__btn--send {
+  background: #c98aa0;
+}
+
+.flavors__btn--send:hover:not(:disabled) {
+  background: #b9758d;
+}
+
+.flavors__note {
+  margin: 0;
+  text-align: center;
+  font-family: 'Oswald', sans-serif;
+  font-size: 0.85rem;
+  color: #3d7a4e;
+}
+
+.flavors__note--err {
+  color: #b04a4a;
+}
+
+/* ----------------------------------------------------------------
+   CHOOSING THE FLAVORS — tam sayfa
+   ---------------------------------------------------------------- */
+.flavors-page {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  overflow-y: auto;
+  min-height: 100vh;
+  background: #aebfd9;
+  padding: clamp(1rem, 3vw, 2rem) clamp(1rem, 4vw, 3rem) 2.5rem;
+}
+
+.flavors-page__head {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.8rem;
+  margin-bottom: 0.6rem;
+}
+
+.flavors-page__back {
+  border: none;
+  background: rgba(26, 47, 75, 0.12);
+  color: var(--navy);
+  font-family: 'Oswald', sans-serif;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 0.82rem;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.flavors-page__back:hover {
+  background: rgba(26, 47, 75, 0.22);
+}
+
+.flavors-page__title-wrap {
+  display: flex;
+  align-items: baseline;
+  gap: 0.8rem;
+}
+
+.flavors-page__no {
+  font-family: 'Anton', sans-serif;
+  font-size: clamp(2.5rem, 8vw, 4rem);
+  color: var(--pink);
+  -webkit-text-stroke: 1px rgba(35, 63, 99, 0.45);
+  line-height: 1;
+}
+
+.flavors-page__title {
+  margin: 0;
+  font-family: 'Anton', sans-serif;
+  font-weight: 400;
+  font-size: clamp(1.6rem, 5vw, 3rem);
+  color: var(--navy);
+  letter-spacing: 0.02em;
+}
+
+.flavors-page__desc {
+  max-width: 640px;
+  margin: 0 0 1.4rem;
+  font-family: 'Oswald', sans-serif;
+  font-size: clamp(0.95rem, 2vw, 1.1rem);
+  line-height: 1.55;
+  color: rgba(26, 47, 75, 0.85);
+}
+
+.flavors-page__layout {
+  display: grid;
+  grid-template-columns: 1fr min(320px, 100%);
+  gap: clamp(1.2rem, 3vw, 2.5rem);
+  align-items: start;
+}
+
+@media (max-width: 860px) {
+  .flavors-page__layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.flavors-page__preview {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 50vh;
+  background: rgba(255, 255, 255, 0.45);
+  border-radius: 20px;
+  padding: clamp(0.8rem, 2vw, 1.5rem);
+  box-shadow: inset 0 0 0 1px rgba(35, 63, 99, 0.1);
+}
+
+.flavors-page__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.8rem;
+  color: rgba(26, 47, 75, 0.55);
+  font-family: 'Oswald', sans-serif;
+  font-size: 0.9rem;
+}
+
+.flavors-page__empty img {
+  max-height: min(62vh, 520px);
+  width: auto;
+  opacity: 1;
+  filter: drop-shadow(0 10px 22px rgba(26, 47, 75, 0.22));
+}
+
+.flavors-page__canvas {
+  display: none;
+  max-width: 100%;
+  max-height: min(72vh, 820px);
+  width: auto;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 16px 40px rgba(26, 47, 75, 0.28);
+}
+
+.flavors-page__canvas.show {
+  display: block;
+}
+
+.flavors-page__panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  background: var(--cream);
+  border-radius: 20px;
+  padding: clamp(1.2rem, 3vw, 1.8rem);
+  box-shadow: 0 12px 32px rgba(26, 47, 75, 0.18);
+}
+
+.flavors-page__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.flavors-page__actions .flavors__btn {
+  width: 100%;
+  min-width: unset;
+}
+
+/* ----------------------------------------------------------------
+   ADMIN GÖRÜNÜMÜ (#admin)
+   ---------------------------------------------------------------- */
+.admin {
+  min-height: 100vh;
+  padding: clamp(1.2rem, 4vw, 2.5rem);
+  background: var(--cream);
+}
+
+.admin--login {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-login {
+  width: min(360px, 92vw);
+  background: linear-gradient(180deg, #f7e8eb 0%, #f3dde1 100%);
+  border: 2px solid #eccdd4;
+  border-radius: 24px;
+  padding: clamp(2rem, 5vw, 2.8rem) clamp(1.5rem, 4vw, 2.2rem);
+  text-align: center;
+  box-shadow: 0 20px 50px rgba(26, 47, 75, 0.18);
+}
+
+.admin-login__pop {
+  width: 48px;
+  height: auto;
+  image-rendering: pixelated;
+  margin-bottom: 0.6rem;
+}
+
+.admin-login__title {
+  margin: 0 0 0.4rem;
+  font-family: 'Anton', sans-serif;
+  font-weight: 400;
+  color: var(--navy);
+  font-size: clamp(1.4rem, 4vw, 1.8rem);
+}
+
+.admin-login__hint {
+  margin: 0 0 1.2rem;
+  font-family: 'Oswald', sans-serif;
+  font-size: 0.9rem;
+  color: rgba(26, 47, 75, 0.7);
+}
+
+.admin-login__input {
+  width: 100%;
+  border: 1.5px solid rgba(35, 63, 99, 0.25);
+  border-radius: 12px;
+  padding: 0.75rem 0.9rem;
+  font-family: 'Oswald', sans-serif;
+  font-size: 1rem;
+  color: var(--navy);
+  background: #fffdf8;
+  margin-bottom: 0.8rem;
+}
+
+.admin-login__input:focus {
+  outline: none;
+  border-color: var(--navy);
+}
+
+.admin-login__err {
+  margin: 0 0 0.8rem;
+  font-family: 'Oswald', sans-serif;
+  font-size: 0.85rem;
+  color: #b04a4a;
+}
+
+.admin-login__btn {
+  width: 100%;
+  border: none;
+  cursor: pointer;
+  font-family: 'Oswald', sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  color: var(--cream);
+  background: var(--navy);
+  padding: 0.85rem 1.5rem;
+  border-radius: 999px;
+  transition: background 0.2s ease;
+}
+
+.admin-login__btn:hover:not(:disabled) {
+  background: var(--navy-deep);
+}
+
+.admin-login__btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.admin__head-right {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.admin__logout {
+  border: 1.5px solid var(--navy);
+  background: transparent;
+  color: var(--navy);
+  font-family: 'Oswald', sans-serif;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.admin__logout:hover {
+  background: rgba(35, 63, 99, 0.08);
+}
+
+.admin__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.admin__head h1 {
+  font-family: 'Anton', sans-serif;
+  font-weight: 400;
+  color: var(--navy);
+  font-size: clamp(1.3rem, 4vw, 2.1rem);
+  margin: 0;
+}
+
+.admin__count {
+  font-family: 'Oswald', sans-serif;
+  color: rgba(26, 47, 75, 0.7);
+}
+
+.admin__empty {
+  font-family: 'Oswald', sans-serif;
+  color: rgba(26, 47, 75, 0.6);
+}
+
+.admin__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
+.admin__card {
+  background: #fff;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 8px 20px rgba(26, 47, 75, 0.14);
+  display: flex;
+  flex-direction: column;
+}
+
+.admin__card img {
+  width: 100%;
+  display: block;
+  background: #eee;
+}
+
+.admin__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.6rem 0.7rem 0.3rem;
+  font-family: 'Oswald', sans-serif;
+  color: var(--navy);
+}
+
+.admin__meta strong {
+  font-size: 0.95rem;
+}
+
+.admin__meta span {
+  font-size: 0.75rem;
+  color: rgba(26, 47, 75, 0.6);
+}
+
+.admin__row {
+  display: flex;
+  gap: 0.4rem;
+  padding: 0.4rem 0.7rem 0.7rem;
+}
+
+.admin__link,
+.admin__del {
+  flex: 1;
+  text-align: center;
+  font-family: 'Oswald', sans-serif;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.45rem 0.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  text-decoration: none;
+  border: none;
+}
+
+.admin__link {
+  background: var(--navy);
+  color: var(--cream);
+}
+
+.admin__del {
+  background: #f0d7dc;
+  color: #a2536a;
+}
+
+.guide__btn:hover {
+  background: var(--navy-deep);
+  transform: translateY(-2px);
+}
+
+/* ----------------------------------------------------------------
+   ATLAMA BUTONU
+   ---------------------------------------------------------------- */
+.skip-btn {
+  position: fixed;
+  right: clamp(1rem, 3vw, 2.5rem);
+  bottom: clamp(1rem, 3vw, 2.5rem);
+  z-index: 10;
+  border: 1px solid rgba(26, 47, 75, 0.4);
+  background: rgba(26, 47, 75, 0.25);
+  color: var(--cream);
+  font-family: 'Oswald', sans-serif;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  padding: 0.55rem 1.1rem;
+  border-radius: 999px;
+  backdrop-filter: blur(4px);
+  transition: background 0.2s ease;
+}
+
+.skip-btn:hover {
+  background: rgba(26, 47, 75, 0.5);
+}
+
+/* ----------------------------------------------------------------
+   ALT BİLGİLENDİRME (hayran projesi notu)
+   ---------------------------------------------------------------- */
+.disclaimer {
+  position: fixed;
+  left: 50%;
+  bottom: clamp(0.8rem, 2.2vw, 1.6rem);
+  transform: translateX(-50%);
+  z-index: 9;
+  width: min(720px, 88vw);
+  text-align: center;
+  font-family: 'Oswald', sans-serif;
+  font-weight: 400;
+  font-size: clamp(0.68rem, 1.2vw, 0.8rem);
+  line-height: 1.45;
+  letter-spacing: 0.02em;
+  color: rgba(26, 47, 75, 0.62);
+  opacity: 0;
+  transition: opacity 0.8s ease;
+  pointer-events: none;
+}
+
+.disclaimer.show {
+  opacity: 1;
+}
+
+/* ----------------------------------------------------------------
+   SKIP MODU
+   ---------------------------------------------------------------- */
+.stage.skip .convoy,
+.stage.skip .runner {
+  display: none;
+}
+
+.stage.skip .arcade-scene.show {
+  transition: none;
+  opacity: 1;
+  transform: none;
+}
+
+/* ----------------------------------------------------------------
+   KEYFRAMES
+   ---------------------------------------------------------------- */
+@keyframes convoyPull {
+  0% {
+    transform: translate(80vw, -50%);
+  }
+  100% {
+    transform: translate(0, -50%);
+  }
+}
+
+@keyframes truckAway {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-96vw);
+  }
+}
+
+@keyframes bannerRunOff {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-125vw);
+  }
+}
+
+@keyframes modalPop {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes hintPulse {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes arcadeFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes slotDispense {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) translate(2vw, 24vh) scale(0.06)
+      rotate(-6deg);
+  }
+  15% {
+    opacity: 1;
+    transform: translate(-50%, -50%) translate(2vw, 24vh) scale(0.06)
+      rotate(-6deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) translate(0, 0) scale(1) rotate(-2deg);
+  }
+}
+
+@keyframes ctaIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 10px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+@keyframes runnerRun {
+  from {
+    transform: translateX(110vw) translateY(-50%) scale(0.78);
+  }
+  to {
+    transform: translateX(-45vw) translateY(-50%) scale(0.78);
+  }
+}
+
+@keyframes runLegs {
+  from {
+    background-position-x: 0;
+  }
+  to {
+    background-position-x: -1603px;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes popsicleFall {
+  0% {
+    transform: translateY(0) translateX(0) rotate(0deg);
+    opacity: 0;
+  }
+  8% {
+    opacity: 0.92;
+  }
+  90% {
+    opacity: 0.92;
+  }
+  100% {
+    transform: translateY(118vh) translateX(var(--sway, 0px))
+      rotate(var(--spin, 200deg));
+    opacity: 0;
+  }
+}
+
+/* hareket hassasiyeti olanlar için */
+@media (prefers-reduced-motion: reduce) {
+  .convoy,
+  .runner {
+    display: none;
+  }
+  .popsicle {
+    animation: none;
+    transform: none;
+    opacity: 0.5;
+  }
+  .arcade-scene.show,
+  .poster-overlay.show {
+    transition: none;
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+  }
+  .arcade-machine img {
+    animation: none;
+  }
+  .scene-ticket .slot-ticket {
+    animation: none;
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1) rotate(-2deg);
+  }
+  .ticket-cta {
+    animation: none;
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+  .poster-hint,
+  .arcade-hint {
+    animation: none;
+  }
+}
