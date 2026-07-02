@@ -100,8 +100,8 @@ export default function FlavorsPage({ onBack }) {
       </header>
 
       <p className="flavors-page__desc">
-        Temaya uygun bir fotoğraf seç; “NO LABELS PART 02” çerçevesi otomatik olarak
-        fotoğrafının üstüne yerleşsin. Sonra indir ve paylaş!
+        Temaya uygun bir fotoğraf seç; çerçeve otomatik yerleşir. İndir ve{' '}
+        <strong>#2cool2label</strong> etiketiyle paylaş!
       </p>
 
       <div className="flavors-page__layout">
@@ -178,7 +178,7 @@ export default function FlavorsPage({ onBack }) {
 
           {submitState === 'done' && (
             <p className="flavors__note">
-              Teşekkürler {fanName.trim()}! Katılımın kaydedildi.
+              Teşekkürler {fanName.trim()}! Katılımın kaydedildi — #2cool2label ile paylaşmayı unutma.
             </p>
           )}
           {submitState === 'error' && (

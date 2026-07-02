@@ -34,6 +34,7 @@
 }
 
 .stage.scene-poster .poster-hint,
+.stage.scene-poster .poster-guide-btn,
 .stage.scene-poster .disclaimer.show {
   opacity: 1;
 }
@@ -439,6 +440,36 @@
   font-size: clamp(0.7rem, 1.2vw, 0.85rem);
   color: rgba(26, 47, 75, 0.7);
   animation: hintPulse 2.2s ease-in-out infinite;
+  margin: 0;
+}
+
+.poster-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.poster-guide-btn {
+  font-family: 'Oswald', sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-size: clamp(0.72rem, 1.3vw, 0.88rem);
+  color: var(--navy);
+  background: var(--cream);
+  border: 2px solid rgba(35, 63, 99, 0.35);
+  border-radius: 999px;
+  padding: 0.55rem 1.4rem;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(26, 47, 75, 0.12);
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.poster-guide-btn:hover {
+  transform: translateY(-1px);
+  background: #fff;
 }
 
 /* ----------------------------------------------------------------
@@ -624,11 +655,19 @@
 
 .guide__item {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 0.7rem;
   background: rgba(255, 255, 255, 0.55);
   border-radius: 14px;
   padding: 0.7rem 0.85rem;
+}
+
+.guide__name {
+  font-family: 'Oswald', sans-serif;
+  font-weight: 600;
+  font-size: 0.92rem;
+  letter-spacing: 0.04em;
+  color: var(--navy);
 }
 
 .guide__no {

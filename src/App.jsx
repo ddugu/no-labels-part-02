@@ -23,31 +23,26 @@ const EVENTS = [
     id: 1,
     title: 'CHOOSING THE FLAVORS',
     hot: { left: 31, top: 26, w: 28, h: 17 },
-    desc: 'Albümdeki favori anlarını seç, kendi “flavor” listeni oluştur ve paylaş.',
   },
   {
     id: 2,
     title: 'MELTING POV',
     hot: { left: 40, top: 44, w: 26, h: 13 },
-    desc: 'Kendi POV videonu çek; o eridiğin anı yakala ve etikete ekle.',
   },
   {
     id: 3,
     title: 'ICE-COLD FIT CHECK',
     hot: { left: 13, top: 52, w: 27, h: 16 },
-    desc: 'Albüm konseptine uygun kombinini paylaş, en “cool” fit’i birlikte seçelim.',
   },
   {
     id: 4,
     title: 'EMPTY THE FREEZER',
     hot: { left: 35, top: 67, w: 27, h: 15 },
-    desc: 'Arşivini boşalt: eski fotoğraf ve edit’lerini geri getir.',
   },
   {
     id: 5,
     title: 'NON-STOP MELTING',
     hot: { left: 17, top: 83, w: 27, h: 15 },
-    desc: 'Durmadan stream! Sayaç dolana kadar dinlemeye devam et.',
   },
 ]
 
@@ -90,7 +85,10 @@ function App() {
   // ESC ile kutuyu kapat
   useEffect(() => {
     const onKey = (e) => {
-      if (e.key === 'Escape') setOpenEvent(null)
+      if (e.key === 'Escape') {
+        setOpenEvent(null)
+        setShowGuide(false)
+      }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
@@ -224,10 +222,7 @@ function App() {
               <button
                 type="button"
                 className="ticket-cta__btn"
-                onClick={() => {
-                  setScene('poster')
-                  setShowGuide(true)
-                }}
+                onClick={() => setScene('poster')}
               >
                 Etkinliklere Başla
               </button>
@@ -267,7 +262,16 @@ function App() {
               </button>
             ))}
           </div>
-          <p className="poster-hint">Bir etkinliğe dokun</p>
+          <div className="poster-actions">
+            <button
+              type="button"
+              className="poster-guide-btn"
+              onClick={() => setShowGuide(true)}
+            >
+              Etkinlik Rehberi
+            </button>
+            <p className="poster-hint">Bir etkinliğe dokun</p>
+          </div>
         </div>
       </section>
 
@@ -294,17 +298,13 @@ function App() {
               ETKİNLİK REHBERİ
             </h3>
             <p className="guide__intro">
-              Posterdeki buz küplerinden birine dokun — her küp farklı bir
-              etkinlik! İşte kısaca ne yapacağız:
+              Posterdeki buz küplerinden birine dokun — her küp farklı bir etkinlik!
             </p>
             <ul className="guide__list">
               {EVENTS.map((ev) => (
                 <li key={ev.id} className="guide__item">
                   <span className="guide__no">{ev.id}</span>
-                  <span className="guide__text">
-                    <strong>{ev.title}</strong>
-                    <span>{ev.desc}</span>
-                  </span>
+                  <strong className="guide__name">{ev.title}</strong>
                 </li>
               ))}
             </ul>
@@ -342,7 +342,11 @@ function App() {
               {active.title}
             </h3>
 
-            <p className="modal__desc">{active.desc}</p>
+            {active.id === 1 && (
+              <p className="modal__desc">
+                Çerçeveli fotoğrafını oluştur ve <strong>#2cool2label</strong> etiketiyle paylaş.
+              </p>
+            )}
             <button
               type="button"
               className="modal__start"
